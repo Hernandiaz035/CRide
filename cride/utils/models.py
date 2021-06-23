@@ -1,4 +1,4 @@
-"""Django models utilities""""
+"""Django models utilities"""
 
 # Django
 from django.db import models
