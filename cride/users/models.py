@@ -3,7 +3,6 @@
 # Django
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.db.models.fields import CharField
 from django.core.validators import RegexValidator
 
 # Utilities
@@ -13,7 +12,7 @@ class User(CRideModel, AbstractUser):
     """User model.
 
     Exteds from  django's AbstractUser, change the username field to email
-    and add some extrafeatures.
+    and add some extra fields.
     """
     email = models.EmailField(
         'email address',
