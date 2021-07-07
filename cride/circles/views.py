@@ -3,6 +3,7 @@
 # Django REST framework
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
 
 # Models
 from cride.circles.models import Circle
@@ -31,4 +32,4 @@ def create_circle(request):
 
     circle = serializer.save()
 
-    return Response(CircleSerializer(circle).data)
+    return Response(CircleSerializer(circle).data, status=status.HTTP_201_CREATED)
