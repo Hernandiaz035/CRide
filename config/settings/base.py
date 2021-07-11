@@ -30,6 +30,9 @@ ROOT_URLCONF = 'config.urls'
 # WSGI
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# AutoField definition for installed apps
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 # Users & Authentication
 AUTH_USER_MODEL = 'users.User'
 
