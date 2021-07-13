@@ -18,7 +18,7 @@ from cride.users.models import (User, Profile)
 
 # Utilities
 import jwt
-from datetime import time, timedelta
+from datetime import timedelta
 
 class UserModelSerializer(serializers.ModelSerializer):
     """User model serializer."""
