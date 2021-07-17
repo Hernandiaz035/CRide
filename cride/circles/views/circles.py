@@ -2,6 +2,7 @@
 
 # Django REST framework
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 # Models
 from cride.circles.models import Circle
@@ -15,3 +16,4 @@ class CircleViewSet(viewsets.ModelViewSet):
 
     queryset = Circle.objects.all()
     serializer_class = CirlcleModelSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
