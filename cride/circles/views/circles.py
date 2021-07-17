@@ -14,6 +14,11 @@ from cride.circles.serializers import CirlcleModelSerializer
 class CircleViewSet(viewsets.ModelViewSet):
     """Circle view set."""
 
-    queryset = Circle.objects.all()
     serializer_class = CirlcleModelSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get_queryset(self):
+        queryset = Circle.objects.all()
+        if self.action == 'list':
+            return queryset.filter(public=True)
+        return queryset
