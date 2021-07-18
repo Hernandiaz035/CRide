@@ -28,6 +28,8 @@ class CirlcleModelSerializer(serializers.ModelSerializer):
             'rides_taken',
         )
 
+    members = serializers.StringRelatedField(many=True, read_only=True)
+
     def validate(self, data):
         """Ensure both members_limit and is_limited are present."""
         members_limit = data.get('members_limit', 0)
