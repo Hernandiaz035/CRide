@@ -13,12 +13,12 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.validators import UniqueValidator
 
-# Models
-from cride.users.models import (User, Profile)
-
 # Utilities
 import jwt
 from datetime import timedelta
+
+# Models
+from cride.users.models import (User, Profile)
 
 class UserModelSerializer(serializers.ModelSerializer):
     """User model serializer."""
