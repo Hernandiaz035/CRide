@@ -16,6 +16,7 @@ from cride.circles.models import Circle, Membership
 
 
 class MembershipViewset(mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
                         viewsets.GenericViewSet):
     """Circle membership view set."""
 
@@ -35,6 +36,15 @@ class MembershipViewset(mixins.ListModelMixin,
     def get_queryset(self):
         """Returns  circle's members."""
         return Membership.objects.filter(
+            circle=self.circle,
+            is_active=True
+        )
+
+    def get_object(self):
+        """Return circle member by providing the user's username."""
+        return get_object_or_404(
+            Membership,
+            user__username=self.kwargs['pk'],
             circle=self.circle,
             is_active=True
         )
