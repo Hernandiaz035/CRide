@@ -19,10 +19,19 @@ class CirlcleModelSerializer(serializers.ModelSerializer):
     class Meta:
         """Meta class."""
         model = Circle
-        fields = '__all__'
+        fields = (
+            'slug_name',
+            'name',
+            'picture',
+            'is_limited',
+            'members_limit',
+            'members',
+            'verified',
+            'public',
+        )
 
         read_only_fields = (
-            'is_public',
+            'public',
             'verified',
             'rides_offered',
             'rides_taken',
