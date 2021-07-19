@@ -24,12 +24,15 @@ class CirlcleModelSerializer(serializers.ModelSerializer):
         fields = (
             'slug_name',
             'name',
+            'about',
             'picture',
-            'is_limited',
-            'members_limit',
-            'members',
+            'rides_taken',
+            'rides_offered',
             'verified',
             'public',
+            'members',
+            'is_limited',
+            'members_limit',
         )
 
         read_only_fields = (
