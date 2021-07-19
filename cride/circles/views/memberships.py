@@ -17,6 +17,7 @@ from cride.circles.models import Circle, Membership
 
 class MembershipViewset(mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
+                        mixins.DestroyModelMixin,
                         viewsets.GenericViewSet):
     """Circle membership view set."""
 
@@ -48,3 +49,8 @@ class MembershipViewset(mixins.ListModelMixin,
             circle=self.circle,
             is_active=True
         )
+
+    def perform_destroy(self, instance):
+        """Set the Membership relation inactive."""
+        instance.is_active = False
+        instance.save()
