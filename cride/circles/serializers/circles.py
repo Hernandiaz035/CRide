@@ -10,6 +10,8 @@ from cride.circles.models import Circle
 class CirlcleModelSerializer(serializers.ModelSerializer):
     """Circle Serializer."""
 
+    members = serializers.StringRelatedField(many=True, read_only=True)
+
     members_limit = serializers.IntegerField(
         required=False,
         min_value=10,
@@ -36,8 +38,6 @@ class CirlcleModelSerializer(serializers.ModelSerializer):
             'rides_offered',
             'rides_taken',
         )
-
-    members = serializers.StringRelatedField(many=True, read_only=True)
 
     def validate(self, data):
         """Ensure both members_limit and is_limited are present."""
