@@ -72,15 +72,26 @@ class MembershipViewset(mixins.ListModelMixin,
             is_active=True
         )
 
-        unused_invitations = Invitation.objects.filter(
+        invitations = Invitation.objects.filter(
             circle=self.circle,
             issued_by=request.user,
             used=False
         ).values_list('code', flat=True)
+        invitations = list(invitations)
+
+        diff = self.get_object().remaining_invitations - len(invitations)
+
+        for i in range(diff):
+            invitations.append(
+                Invitation.objects.create(
+                    issued_by=request.user,
+                    circle=self.circle
+                ).code
+            )
 
         data = {
             "used_invitations": MembershipModelSerializer(invited_members, many=True).data,
-            "unsued_invitations": unused_invitations
+            "unsued_invitations": invitations
         }
 
         return Response(data, status=status.HTTP_200_OK)
