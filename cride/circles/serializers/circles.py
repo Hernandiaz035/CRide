@@ -7,7 +7,7 @@ from rest_framework import serializers
 from cride.circles.models import Circle
 
 
-class CirlcleModelSerializer(serializers.ModelSerializer):
+class CircleModelSerializer(serializers.ModelSerializer):
     """Circle Serializer."""
 
     members = serializers.StringRelatedField(many=True, read_only=True)

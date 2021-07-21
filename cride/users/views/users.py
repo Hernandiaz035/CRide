@@ -20,7 +20,7 @@ from cride.users.serializers import (
     AccountVerificationSerializer,
     ProfileModelSerializer,
 )
-from cride.circles.serializers.circles import CirlcleModelSerializer
+from cride.circles.serializers.circles import CircleModelSerializer
 
 # Models
 from cride.users.models import User
@@ -103,7 +103,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
         )
         data = {
             'user': response.data,
-            'circles': CirlcleModelSerializer(circles, many=True, read_only=True).data
+            'circles': CircleModelSerializer(circles, many=True, read_only=True).data
         }
         response.data = data
         return response

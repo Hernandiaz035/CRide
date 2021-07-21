@@ -9,7 +9,7 @@ from rest_framework.exceptions import MethodNotAllowed
 from cride.circles.models import Circle, Membership
 
 # Serializers
-from cride.circles.serializers import CirlcleModelSerializer
+from cride.circles.serializers import CircleModelSerializer
 
 # Permissions
 from cride.circles.permissions import IsCircleAdmin
@@ -18,7 +18,7 @@ from cride.circles.permissions import IsCircleAdmin
 class CircleViewSet(viewsets.ModelViewSet):
     """Circle view set."""
 
-    serializer_class = CirlcleModelSerializer
+    serializer_class = CircleModelSerializer
 
     lookup_field = 'slug_name'
 
