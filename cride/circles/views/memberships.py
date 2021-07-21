@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 
 # Permissions
 from rest_framework.permissions import IsAuthenticated
-from cride.circles.permissions.memberships import IsActiveCircleMember
+from cride.circles.permissions.memberships import IsActiveCircleMember, IsSelfMember
 
 # Serializer
 from cride.circles.serializers import MembershipModelSerializer
@@ -34,6 +34,8 @@ class MembershipViewset(mixins.ListModelMixin,
     def get_permissions(self):
         """Assign permissions based on the performed actions."""
         permissions = [IsAuthenticated, IsActiveCircleMember]
+        if self.action == 'invitations':
+            permissions.append(IsSelfMember)
         return [p() for p in permissions]
 
     def get_queryset(self):
