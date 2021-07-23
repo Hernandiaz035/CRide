@@ -5,6 +5,10 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import MethodNotAllowed
 
+# Filters
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
+
 # Models
 from cride.circles.models import Circle, Membership
 
@@ -21,6 +25,21 @@ class CircleViewSet(viewsets.ModelViewSet):
     serializer_class = CircleModelSerializer
 
     lookup_field = 'slug_name'
+
+    # filters
+    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
+    search_fields = ['name', 'slug_name']
+    ordering_fields = [
+        'rides_offered',
+        'rides_taken',
+        'reputation',
+        'name',
+        'created',
+        'members_limit'
+    ]
+    ordering = ['-members__count', '-rides_offered', 'rides_taken']
+    filter_fields = ['verified', 'is_limited']
+
 
     def get_queryset(self):
         queryset = Circle.objects.all()

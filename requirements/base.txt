@@ -13,6 +13,8 @@ django-environ==0.4.5
 # Django REST framework
 djangorestframework
 
+django-filter
+
 # JWT
 pyjwt
 
