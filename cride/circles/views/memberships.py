@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from cride.circles.permissions.memberships import IsActiveCircleMember, IsSelfMember
 
 # Serializer
-from cride.circles.serializers import MembershipModelSerializer
+from cride.circles.serializers import MembershipModelSerializer, AddMemberSerializer
 
 # Model
 from cride.circles.models import Circle, Membership, Invitation
@@ -19,6 +19,7 @@ from cride.circles.models import Circle, Membership, Invitation
 
 class MembershipViewset(mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
+                        mixins.CreateModelMixin,
                         mixins.DestroyModelMixin,
                         viewsets.GenericViewSet):
     """Circle membership view set."""
@@ -33,7 +34,9 @@ class MembershipViewset(mixins.ListModelMixin,
 
     def get_permissions(self):
         """Assign permissions based on the performed actions."""
-        permissions = [IsAuthenticated, IsActiveCircleMember]
+        permissions = [IsAuthenticated]
+        if self.action != 'create':
+            permissions.append(IsActiveCircleMember)
         if self.action == 'invitations':
             permissions.append(IsSelfMember)
         return [p() for p in permissions]
@@ -97,3 +100,15 @@ class MembershipViewset(mixins.ListModelMixin,
         }
 
         return Response(data, status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        """Handle member creation based on a Invitation."""
+        serializer = AddMemberSerializer(
+            data=request.data,
+            context={'circle': self.circle, 'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        member = serializer.save()
+
+        data = self.get_serializer(member).data
+        return Response(data, status=status.HTTP_201_CREATED)
