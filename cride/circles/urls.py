@@ -13,7 +13,7 @@ from cride.circles.views import memberships as membership_views
 router = DefaultRouter()
 router.register(r'circles', circle_views.CircleViewSet, basename='circle')
 router.register(
-    r'circles/(?P<slug_name>\w+)/members',
+    r'circles/(?P<slug_name>[\w-]+)/members',
     membership_views.MembershipViewset,
     basename='membership'
 )
