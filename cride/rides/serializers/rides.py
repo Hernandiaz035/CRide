@@ -6,6 +6,7 @@ from rest_framework import serializers
 # Models
 from cride.rides.models import Ride
 from cride.circles.models import Membership
+from cride.users.models import User
 
 # Serializers
 from cride.users.serializers import UserModelSerializer
@@ -43,7 +44,7 @@ class RideModelSerializer(serializers.ModelSerializer):
         return super(RideModelSerializer, self).update(instance, validated_data)
 
 class CreateRideSerializer(serializers.ModelSerializer):
-    """Ride serializer."""
+    """Create Ride serializer."""
 
     offered_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
     available_seats = serializers.IntegerField(min_value=1, max_value=10)
@@ -103,5 +104,80 @@ class CreateRideSerializer(serializers.ModelSerializer):
         profile = validated_data['offered_by'].profile
         profile.rides_offered += 1
         profile.save()
+
+        return ride
+
+
+class JoinRideSerializer(serializers.ModelSerializer):
+    """Join Ride Serializer."""
+
+    passenger = serializers.CharField()
+
+    class Meta:
+        """Meta class."""
+        model = Ride
+        fields = ['passenger']
+
+    def validate_passenger(self, data):
+        """Validate Passenger."""
+        try:
+            user = User.objects.get(username=data)
+        except User.DoesNotExist:
+            raise serializers.ValidationError('User does not exists.')
+
+        circle = self.context['circle']
+        try:
+            self.context['member'] = Membership.objects.get(
+                circle=circle,
+                user=user,
+                is_active=True
+            )
+        except Membership.DoesNotExist:
+            raise serializers.ValidationError('User does not belong to the circle.')
+
+        self.context['user'] = user
+
+        return data
+
+    def validate(self, data):
+        """Verify ride allow new passengers."""
+        ride = self.context['ride']
+        if ride.departure_date < timezone.now():
+            raise serializers.ValidationError('Passenger cannot join this ride now.')
+
+        if ride.available_seats < 1:
+            raise serializers.ValidationError('There is no room in this ride.')
+
+        if ride.passengers.filter(username=data['passenger']).exists():
+            raise serializers.ValidationError('User is already joined in the ride.')
+
+        if ride.offered_by == self.context['user']:
+            raise serializers.ValidationError('The ride creator cannot be a passenger.')
+
+        return data
+
+    def update(self, ride, _):
+        """Add passenger to ride and update Stats."""
+        user = self.context['user']
+
+        # Ride
+        ride.passengers.add(user)
+        ride.available_seats -= 1
+        ride.save()
+
+        # Profile
+        profile = user.profile
+        profile.rides_taken += 1
+        profile.save()
+
+        # Membership
+        member = self.context['member']
+        member.rides_taken += 1
+        member.save()
+
+        # Circle
+        circle = self.context['circle']
+        circle.rides_taken += 1
+        circle.save()
 
         return ride

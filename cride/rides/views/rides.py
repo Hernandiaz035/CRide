@@ -4,6 +4,8 @@
 # Django REST Framework
 from rest_framework import mixins, viewsets, status
 from rest_framework.generics import get_object_or_404
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 # Permissions
 from rest_framework.permissions import IsAuthenticated
@@ -13,7 +15,8 @@ from cride.rides.permissions import IsRideOwner
 # Serializers
 from cride.rides.serializers import (
     RideModelSerializer,
-    CreateRideSerializer
+    CreateRideSerializer,
+    JoinRideSerializer,
 )
 
 # Filtes
@@ -68,6 +71,8 @@ class RideViewset(mixins.ListModelMixin,
         """Return serializer based on actions."""
         if self.action == 'create':
             return CreateRideSerializer
+        if self.action == 'join':
+            return JoinRideSerializer
         return RideModelSerializer
 
     def get_serializer_context(self):
@@ -75,3 +80,31 @@ class RideViewset(mixins.ListModelMixin,
         context = super(RideViewset, self).get_serializer_context()
         context['circle'] = self.circle
         return context
+
+    def get_serializer(self, *args, **kwargs):
+        """Return Serializer with incremental context.
+
+        Updates `get_serilizer_context()` dictionay with this method's `kwargs['context']`.
+        """
+        serializer_class = self.get_serializer_class()
+        context = self.get_serializer_context()
+        action_context = kwargs.get('context', dict())
+        context.update(action_context)
+        kwargs['context'] = context
+        return serializer_class(*args, **kwargs)
+
+    @action(detail=True, methods=['POST'])
+    def join(self, request, *args, **kwargs):
+        """Add requestiing user to ride."""
+        ride = self.get_object()
+        serializer = self.get_serializer(
+            ride,
+            data={'passenger': request.user.username},
+            context={'ride': self.get_object()},
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        ride = serializer.save()
+
+        data = RideModelSerializer(ride).data
+        return Response(data, status=status.HTTP_200_OK)
