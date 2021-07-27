@@ -76,22 +76,12 @@ class RideViewset(mixins.ListModelMixin,
         return RideModelSerializer
 
     def get_serializer_context(self):
-        """Add circle to serializer context."""
+        """Return serializer context based on actions."""
         context = super(RideViewset, self).get_serializer_context()
         context['circle'] = self.circle
+        if self.action == 'join':
+            context['ride'] = self.get_object()
         return context
-
-    def get_serializer(self, *args, **kwargs):
-        """Return Serializer with incremental context.
-
-        Updates `get_serilizer_context()` dictionay with this method's `kwargs['context']`.
-        """
-        serializer_class = self.get_serializer_class()
-        context = self.get_serializer_context()
-        action_context = kwargs.get('context', dict())
-        context.update(action_context)
-        kwargs['context'] = context
-        return serializer_class(*args, **kwargs)
 
     @action(detail=True, methods=['POST'])
     def join(self, request, *args, **kwargs):
@@ -100,7 +90,6 @@ class RideViewset(mixins.ListModelMixin,
         serializer = self.get_serializer(
             ride,
             data={'passenger': request.user.username},
-            context={'ride': self.get_object()},
             partial=True
         )
         serializer.is_valid(raise_exception=True)
