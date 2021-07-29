@@ -17,6 +17,7 @@ from cride.rides.serializers import (
     RideModelSerializer,
     CreateRideSerializer,
     JoinRideSerializer,
+    EndRideSerializer,
 )
 
 # Filtes
@@ -51,6 +52,8 @@ class RideViewset(mixins.ListModelMixin,
 
     def get_queryset(self):
         """Return active circle's Rides."""
+        if self.action == 'finish':
+            return self.circle.ride_set.all()
         offset = timezone.now() + timedelta(minutes=10)
         return self.circle.ride_set.filter(
             departure_date__gte=offset,
@@ -62,7 +65,7 @@ class RideViewset(mixins.ListModelMixin,
         """Return permissions based on the performing acton."""
         permissions = [IsAuthenticated, IsActiveCircleMember]
 
-        if self.action in ['update', 'partial_update']:
+        if self.action in ['update', 'partial_update', 'finish']:
             permissions.append(IsRideOwner)
 
         return [p() for p in permissions]
@@ -73,13 +76,15 @@ class RideViewset(mixins.ListModelMixin,
             return CreateRideSerializer
         if self.action == 'join':
             return JoinRideSerializer
+        if self.action == 'finish':
+            return EndRideSerializer
         return RideModelSerializer
 
     def get_serializer_context(self):
         """Return serializer context based on actions."""
         context = super(RideViewset, self).get_serializer_context()
         context['circle'] = self.circle
-        if self.action == 'join':
+        if self.action in ['join', 'finish']:
             context['ride'] = self.get_object()
         return context
 
@@ -95,5 +100,19 @@ class RideViewset(mixins.ListModelMixin,
         serializer.is_valid(raise_exception=True)
         ride = serializer.save()
 
+        data = RideModelSerializer(ride).data
+        return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['POST'])
+    def finish(self, request, *args, **kwargs):
+        """Finish Ride by its owner."""
+        ride = self.get_object()
+        serializer = self.get_serializer(
+            ride,
+            data={'is_active': False, 'current_time': timezone.now()},
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        ride = serializer.save()
         data = RideModelSerializer(ride).data
         return Response(data, status=status.HTTP_200_OK)
