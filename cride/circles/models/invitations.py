@@ -8,7 +8,6 @@ from cride.circles.managers import InvitationManager
 
 # Utilities
 from cride.utils.models import CRideModel
-from uuid import uuid4
 
 
 class Invitation(CRideModel):
@@ -17,7 +16,7 @@ class Invitation(CRideModel):
     Invitation is a tables that holds the code or permission granted
     from one circle member to another user to join to the circle."""
 
-    code =  models.CharField(unique=True, editable=False, max_length=50)
+    code = models.CharField(unique=True, editable=False, max_length=50)
 
     issued_by = models.ForeignKey(
         'users.User',

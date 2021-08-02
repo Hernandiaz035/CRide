@@ -43,6 +43,7 @@ class RideModelSerializer(serializers.ModelSerializer):
             serializers.ValidationError('Ongoing rides cannot be modified.')
         return super(RideModelSerializer, self).update(instance, validated_data)
 
+
 class CreateRideSerializer(serializers.ModelSerializer):
     """Create Ride serializer."""
 
@@ -58,6 +59,7 @@ class CreateRideSerializer(serializers.ModelSerializer):
             'rating',
             'is_active',
         ]
+
     def validate_departure_date(self, data):
         """Verify date is not in the past."""
         min_date = timezone.now() + timedelta(minutes=10)
