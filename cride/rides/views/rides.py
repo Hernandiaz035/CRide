@@ -18,6 +18,7 @@ from cride.rides.serializers import (
     CreateRideSerializer,
     JoinRideSerializer,
     EndRideSerializer,
+    RateRideSerializer,
 )
 
 # Filtes
@@ -25,7 +26,6 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 # Models
 from cride.circles.models import Circle
-from cride.rides.models import Ride
 
 # Utilities
 from datetime import timedelta
@@ -52,7 +52,7 @@ class RideViewset(mixins.ListModelMixin,
 
     def get_queryset(self):
         """Return active circle's Rides."""
-        if self.action == 'finish':
+        if self.action in ['finish', 'rate']:
             return self.circle.ride_set.all()
         offset = timezone.now() + timedelta(minutes=10)
         return self.circle.ride_set.filter(
@@ -78,13 +78,15 @@ class RideViewset(mixins.ListModelMixin,
             return JoinRideSerializer
         if self.action == 'finish':
             return EndRideSerializer
+        if self.action == 'rate':
+            return RateRideSerializer
         return RideModelSerializer
 
     def get_serializer_context(self):
         """Return serializer context based on actions."""
         context = super(RideViewset, self).get_serializer_context()
         context['circle'] = self.circle
-        if self.action in ['join', 'finish']:
+        if self.action in ['join', 'finish', 'rate']:
             context['ride'] = self.get_object()
         return context
 
@@ -116,3 +118,21 @@ class RideViewset(mixins.ListModelMixin,
         ride = serializer.save()
         data = RideModelSerializer(ride).data
         return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['POST'])
+    def rate(self, request, *args, **kwargs):
+        """Rate the ride by the requesting user."""
+        data = {
+            'ride': self.get_object().id,
+            'circle': self.circle.id,
+            'rating_user': request.user.id,
+            'rated_user': self.get_object().offered_by.id
+        }
+        request.data.update(data)
+        serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
