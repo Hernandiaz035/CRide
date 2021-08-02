@@ -40,7 +40,7 @@ class Rating(CRideModel):
         related_name='rated_user'
     )
 
-    coments = models.TextField(blank=True)
+    comments = models.TextField(blank=True)
 
     rating = models.FloatField(default=1)
 
