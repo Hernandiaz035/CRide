@@ -116,7 +116,7 @@ class UserSignupSerializer(serializers.Serializer):
         regex=r'\+?1?\d{9,15}$',
         message="Phone number must be entered in the format +99999999999. Up to 15 digits allowed."
     )
-    phone_number = serializers.CharField(max_length=17,validators=[phone_regex])
+    phone_number = serializers.CharField(max_length=17, validators=[phone_regex])
 
     # Password
     password = serializers.CharField(min_length=8, max_length=64)
