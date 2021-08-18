@@ -4,9 +4,6 @@
 from django.conf import settings
 from django.contrib.auth import password_validation, authenticate
 from django.core.validators import RegexValidator
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from django.utils import timezone
 
 # Django REST framework
 from rest_framework import serializers
@@ -18,10 +15,12 @@ from cride.users.serializers.profiles import ProfileModelSerializer
 
 # Utilities
 import jwt
-from datetime import timedelta
 
 # Models
 from cride.users.models import (User, Profile)
+
+# Tasks
+from cride.taskapp.tasks import send_confirmation_email
 
 
 class UserModelSerializer(serializers.ModelSerializer):
@@ -140,29 +139,5 @@ class UserSignupSerializer(serializers.Serializer):
         data.pop('password_confirmation')
         user = User.objects.create_user(**data, is_verified=False, is_client=True)
         Profile.objects.create(user=user)
-        self.send_confirmation_email(user)
+        send_confirmation_email.delay(user_pk=user.pk)
         return user
-
-    def send_confirmation_email(self, user):
-        """Send account verification link to given user."""
-        verification_token = self.gen_verification_token(user)
-
-        subject = "Welcome @{}! Verify your account to start using Comparte Ride.".format(user.username)
-        from_email = 'Comparte Ride <noreply@comparteride.com>'
-        content = render_to_string(
-            'emails/users/account_verification.html',
-            {'token': verification_token, 'user': user}
-        )
-        msg = EmailMultiAlternatives(subject, content, from_email, [user.email])
-        msg.attach_alternative(content, "text/html")
-        msg.send()
-
-    def gen_verification_token(self, user):
-        """Create the JWT token that the user can use to verify their account."""
-        exp_date = timezone.now() + timedelta(days=3)
-        payload = {
-            'username': user.username,
-            'exp': int(exp_date.timestamp()),
-            'type': 'email_confirmation'
-        }
-        return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
